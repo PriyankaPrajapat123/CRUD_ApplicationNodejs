@@ -9,11 +9,20 @@ const app = express();
 //middleware
 app.use(express.json());
 app.use(cors());
-app.post('/add-data',async (req,resp)=>{
-    let data = new Item(req.body);
-    let result = await data.save();
-    resp.send(result);
-})
+app.post('/add-data', async (req, res) => {
+    const { fullName, rollNo, items } = req.body;
+
+    // Check if roll number already exists
+    const existingUser = await Item.findOne({ rollNo });
+    if (existingUser) {
+        return res.status(400).json({ message: 'User with this roll number already exists.' });
+    }
+
+    // Create new user
+    const newUser = new Item({ fullName, rollNo, items });
+    await newUser.save();
+    res.status(201).json(newUser);
+});
 
 //show list
 app.get('/show-list',async(req,resp)=>{
